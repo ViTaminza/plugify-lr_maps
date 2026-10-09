@@ -1,0 +1,28 @@
+{
+	"$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
+	"version": "${LR_MAPS_VERSION}",
+	"name": "lr_maps",
+	"description": "[LR] ExStats Maps: per-(SteamID, map) statistics in the `<lr_table>_maps` table (map plays, kills, deaths, round counters, bomb planted/defused, hostages rescued/killed, playtime on the map), saved at disconnect or after every round (lr_db_savedata_player_mode) and zeroed on !reset. Ported from the Pisex Levels Ranks module LR_ExStatsMaps (production plugin lr_maps). Owns its plgdb connection with the levels_ranks database settings. Requires the levels_ranks core; no exported methods.",
+	"author": "Pisex, ported to Plugify",
+	"website": "https://github.com/untrustedmodders/plugify",
+	"license": "GPL-3.0",
+	"entry": "bin/lr_maps",
+	"platforms": [],
+	"language": "cpp",
+	"dependencies": [
+		{
+			"name": "s2sdk",
+			"constraints": ">=2.18.2"
+		},
+		{
+			"name": "levels_ranks",
+			"constraints": ">=1.0.0"
+		},
+		{
+			"name": "hudmenu",
+			"constraints": ">=1.0.0",
+			"optional": true
+		}
+	],
+	"methods": []
+}
