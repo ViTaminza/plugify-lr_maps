@@ -78,7 +78,8 @@ Statement InsertStatement(std::string_view table, std::string_view steamid, std:
 
 // The callback of OnPlayerLoadedHook: an existing row counts the play (countplays + 1) and copies
 // the counters; the slot becomes active. Returns false when the result has no row (the caller then
-// ResetSlot()s and inserts).
+// ResetSlot()s and inserts) - the caller distinguishes that from a failed query by Result::Ok(),
+// because a failure must not be treated as an empty row.
 bool ApplyLoaded(SlotState& slot, const plgdb::Result& result);
 
 // SaveDataPlayer(): UPDATE of the eleven counters WHERE steam AND name_map.

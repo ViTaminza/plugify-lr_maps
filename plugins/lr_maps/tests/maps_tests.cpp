@@ -8,8 +8,9 @@
 //   * the SQL layer against SQLite ":memory:" always and against MySQL when MYSQL_HOST is set
 //     (test.sh provides MYSQL_HOST/MYSQL_PORT/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DATABASE). Rows
 //     created in MySQL are deleted at the end.
-
-#include <plg/plugin.hpp>
+//
+// The engine-side half (the s2sdk event hooks, the map lifecycle, the disconnect save and the real
+// asynchronous SQLite path) is exercised by tests/event_tests.cpp, which links src/plugin.cpp.
 
 #include <cstdint>
 #include <cstdio>
@@ -21,20 +22,6 @@
 #include <string_view>
 
 #include "maps_core.hpp"
-
-// A real plugin gets these from PLUGIFY_PLUGIN; the test leaves them null.
-namespace plg {
-GetBaseDirFn GetBaseDir{nullptr};
-GetExtensionsDirFn GetExtensionsDir{nullptr};
-GetConfigsDirFn GetConfigsDir{nullptr};
-GetDataDirFn GetDataDir{nullptr};
-GetLogsDirFn GetLogsDir{nullptr};
-GetCacheDirFn GetCacheDir{nullptr};
-IsLoadedFn IsLoaded{nullptr};
-LogFn Log{nullptr};
-BeginZoneFn BeginZone{nullptr};
-EndZoneFn EndZone{nullptr};
-} // namespace plg
 
 namespace {
 
@@ -135,6 +122,30 @@ void TestEvents() {
 	TickSecond(state);
 	CHECK_EQ_INT(state[3].time, 2);
 	CHECK_EQ_INT(state[4].time, 0);
+}
+
+void TestApplyLoadedError() {
+	Section("ApplyLoaded (a failed query is not an empty row)");
+	SlotState slot;
+	slot.active = true;
+	slot.kills = 7;
+	slot.time = 90;
+
+	plgdb::Result failed;
+	failed.error = "plgdb: connect failed";
+	CHECK(!ApplyLoaded(slot, failed)); // false, but the caller must retry instead of ResetSlot()
+	CHECK(slot.active);
+	CHECK_EQ_INT(slot.kills, 7);
+	CHECK_EQ_INT(slot.time, 90);
+
+	// A successful query without a row is a new (steam, map): the slot is untouched here and the
+	// caller resets it and inserts.
+	plgdb::Result missing;
+	missing.columns = {"countplays", "kills", "deaths", "rounds_overall", "rounds_ct",
+					   "rounds_t", "bomb_planted", "bomb_defused", "hostage_rescued",
+					   "hostage_killed", "playtime"};
+	CHECK(!ApplyLoaded(slot, missing));
+	CHECK_EQ_INT(slot.kills, 7); // ApplyLoaded never writes on either failure; ResetSlot() does
 }
 
 void TestResetSlot() {
@@ -280,6 +291,7 @@ int main() {
 	const std::string tag = std::to_string(rng() % 1000000ULL);
 
 	TestEvents();
+	TestApplyLoadedError();
 	TestResetSlot();
 
 	TestDatabase(SqliteConfig(), "sqlite (:memory:)", "lvl_base_maps_sqlite", /*cleanup=*/false);

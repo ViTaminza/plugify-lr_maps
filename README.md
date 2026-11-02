@@ -4,14 +4,16 @@
 
 Plugify port (fork) of **LR_ExStatsMaps ([LR] ExStats Maps)** by Pisex (Metamod (C++)).
 Original: https://github.com/Pisex/cs2-lvl_ranks_modules
-The code was rewritten for Plugify / s2sdk; behaviour follows the original.
+The code was rewritten for Plugify / s2sdk.
 
 ## Requirements
 - [Plugify](https://github.com/untrustedmodders/plugify) with [s2sdk](https://github.com/untrustedmodders/plugify-plugin-s2sdk)
-- Plugify dependencies: s2sdk, levels_ranks, hudmenu (optional)
+- Plugin version: 1.1.0
+- Plugify dependencies: s2sdk (>=2.18.2), levels_ranks (>=1.0.0)
+- Self-contained s2sdk integration: uses s2sdk directly, without the pisexcompat library.
 
 ## Installation
-Download `lr_maps-1.0.2.zip` from Releases and extract it into `game/csgo/`.
+Download `lr_maps-1.1.0.zip` from Releases and extract it into `game/csgo/`.
 
 ## Building
 Requires Docker. `./build.sh` builds in the Steam Runtime 3 (sniper) SDK image; the package
